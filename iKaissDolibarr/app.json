@@ -50,7 +50,7 @@
         }
       ],
       [
-        "expo-barcode-scanner",
+        "expo-camera",
         {
           "cameraPermission": "L'application a besoin de la caméra pour scanner les codes-barres des produits."
         }

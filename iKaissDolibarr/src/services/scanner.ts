@@ -34,28 +34,30 @@ export interface BarcodeScanResult {
 /**
  * Scanne un code-barres (interface pour futur intégration)
  * 
- * À implémenter avec expo-barcode-scanner
+ * Utilise expo-camera (expo-barcode-scanner est déprécié depuis SDK 52+)
  */
 export async function scanBarcode(): Promise<BarcodeScanResult | null> {
-  // TODO: Implémenter avec expo-barcode-scanner
+  // TODO: Implémenter avec expo-camera
   // Exemple de code (nécessite installation du package):
   /*
-  import { BarCodeScanner, BarCodeScannerResult } from 'expo-barcode-scanner';
+  import { CameraView, useCameraPermissions } from 'expo-camera';
   
   // Demander la permission caméra
-  const { status } = await BarCodeScanner.requestPermissionsAsync();
-  if (status !== 'granted') {
-    throw new Error('Permission caméra refusée');
+  const [permission, requestPermission] = useCameraPermissions();
+  if (!permission) {
+    await requestPermission();
   }
   
-  // Dans un composant avec BarCodeScanner :
-  // <BarCodeScanner
-  //   onBarCodeScanned={handleBarCodeScanned}
-  //   barCodeTypes={[BarCodeScanner.Constants.BarCodeType.ean13, ...]}
+  // Dans un composant avec CameraView :
+  // <CameraView
+  //   onBarcodeScanned={handleBarCodeScanned}
+  //   barcodeScannerSettings={{
+  //     barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'code128', 'code39', 'itf', 'qr']
+  //   }}
   // />
   */
   
-  throw new Error('Scanner non configuré. Installez expo-barcode-scanner.');
+  throw new Error('Scanner non configuré. Installez expo-camera.');
 }
 
 /**
@@ -76,20 +78,25 @@ export interface BluetoothScanner {
  */
 export async function discoverBluetoothScanners(): Promise<BluetoothScanner[]> {
   try {
-    // Pour expo-barcode-scanner, on utilise la caméra (pas de découverte Bluetooth)
+    // Pour expo-camera, on utilise la caméra (pas de découverte Bluetooth)
     // Mais on peut vérifier si le scanner caméra est disponible
-    const BarCodeScanner = await import('expo-barcode-scanner').catch(() => null);
+    const Camera = await import('expo-camera').catch(() => null);
     
-    if (BarCodeScanner && BarCodeScanner.BarCodeScanner) {
-      // Vérifier les permissions
-      const { status } = await BarCodeScanner.BarCodeScanner.requestPermissionsAsync();
-      if (status === 'granted') {
-        return [{
-          id: 'camera_scanner',
-          name: 'Scanner caméra',
-          type: 'camera',
-          connected: true,
-        }];
+    if (Camera && Camera.useCameraPermissions) {
+      // Vérifier les permissions via le hook (pour composant) ou Camera.requestCameraPermissionsAsync() (pour fonction)
+      try {
+        const { requestCameraPermissionsAsync } = await import('expo-camera');
+        const { status } = await requestCameraPermissionsAsync();
+        if (status === 'granted') {
+          return [{
+            id: 'camera_scanner',
+            name: 'Scanner caméra',
+            type: 'camera',
+            connected: true,
+          }];
+        }
+      } catch (permError) {
+        // Ignorer les erreurs de permissions
       }
     }
     
