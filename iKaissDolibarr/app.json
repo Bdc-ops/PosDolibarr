@@ -48,13 +48,23 @@
         {
           "faceIDPermission": "Permettre l'utilisation de Face ID pour sécuriser vos données."
         }
+      ],
+      [
+        "expo-barcode-scanner",
+        {
+          "cameraPermission": "L'application a besoin de la caméra pour scanner les codes-barres des produits."
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
-      "router": {}
-    }
+      "router": {},
+      "eas": {
+        "projectId": "99f840ea-9c28-4447-b9dc-3ce6cdeb4ae3"
+      }
+    },
+    "owner": "bdc_fahd-2"
   }
 }
