@@ -16,6 +16,7 @@ import type { Order, ThirdParty } from "../types/dolibarr.types"
 import { format, startOfMonth, endOfMonth, subMonths, isWithinInterval } from "date-fns"
 import { formatPriceWithCurrency } from "../utils/formatPrice"
 import { limitForDisplay, formatDisplayCount } from "../utils/apiHelpers"
+import WaveFAB from "../components/WaveFAB"
 
 type StatusFilter = "all" | "draft" | "validated"
 type DateFilter = "all" | "thisMonth" | "lastMonth" | "last3Months"
@@ -158,6 +159,7 @@ export default function OrdersScreen({ navigation }: any) {
       <View style={styles.backgroundGlow} />
       <View style={styles.backgroundGlowSecondary} />
       <View style={styles.container}>
+        <WaveFAB />
         <View style={styles.header}>
           <TextInput
             style={styles.searchInput}
@@ -374,6 +376,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 16,
+    paddingBottom: 100, // Espace pour le WaveFAB au-dessus du footer
   },
   orderCard: {
     backgroundColor: "rgba(255, 255, 255, 0.78)",

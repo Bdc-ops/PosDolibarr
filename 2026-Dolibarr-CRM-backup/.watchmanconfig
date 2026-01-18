@@ -1,0 +1,24 @@
+{
+  "ignore_dirs": [
+    "node_modules",
+    ".git",
+    ".expo",
+    ".expo-shared",
+    "dist",
+    "build",
+    ".next",
+    "ios",
+    "android",
+    "web-build",
+    ".DS_Store",
+    "*.log",
+    ".env*",
+    "coverage",
+    ".idea",
+    ".vscode",
+    ".metro",
+    "node_modules/.cache"
+  ],
+  "settle": 20,
+  "root_files": [".watchmanconfig", "package.json"]
+}

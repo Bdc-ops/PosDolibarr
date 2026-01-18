@@ -187,41 +187,97 @@ export async function createInvoice(
     console.log('[createInvoice] Réponse brute:', JSON.stringify(response.data, null, 2));
 
     // Dolibarr peut retourner l'ID de différentes façons
-    // Essayons plusieurs formats de réponse
-    const invoiceDataReturned: any = response.data || {};
-    
-    // Format 1: { id: 123, ... }
-    // Format 2: { invoice: { id: 123, ... } }
-    // Format 3: réponse directe avec id
-    let invoiceId: number | undefined = invoiceDataReturned.id || 
-                                       invoiceDataReturned.invoice?.id ||
-                                       invoiceDataReturned.rowid ||
-                                       invoiceDataReturned.fk_facture;
-    
-    // Si l'ID est une string, convertir en number
-    if (invoiceId && typeof invoiceId === 'string') {
-      invoiceId = parseInt(invoiceId, 10);
+    // Format 1: nombre directement (ex: 6) - c'est l'ID de la facture créée
+    // Format 2: { id: 123, ... }
+    // Format 3: { invoice: { id: 123, ... } }
+    let invoiceId: number | undefined;
+    let invoiceDataReturned: any = {};
+
+    // Si la réponse est un nombre, c'est l'ID directement
+    if (typeof response.data === 'number') {
+      invoiceId = response.data;
+      console.log('[createInvoice] ID reçu directement comme nombre:', invoiceId);
+    } 
+    // Si c'est une string qui représente un nombre
+    else if (typeof response.data === 'string' && !isNaN(Number(response.data))) {
+      invoiceId = parseInt(response.data, 10);
+      console.log('[createInvoice] ID reçu comme string, converti:', invoiceId);
+    }
+    // Sinon, c'est un objet
+    else {
+      invoiceDataReturned = response.data || {};
+      
+      // Chercher l'ID dans différentes propriétés possibles
+      invoiceId = invoiceDataReturned.id || 
+                 invoiceDataReturned.invoice?.id ||
+                 invoiceDataReturned.rowid ||
+                 invoiceDataReturned.fk_facture;
+      
+      // Si l'ID est une string, convertir en number
+      if (invoiceId && typeof invoiceId === 'string') {
+        invoiceId = parseInt(invoiceId, 10);
+      }
+      
+      console.log('[createInvoice] ID extrait de l\'objet:', invoiceId);
     }
 
-    const invoiceResult: DolibarrInvoice = {
-      id: invoiceId,
-      ref: invoiceDataReturned.ref || invoiceDataReturned.invoice?.ref || invoiceDataReturned.ref_ext,
-      ref_ext: invoiceDataReturned.ref_ext || invoiceDataReturned.invoice?.ref_ext,
-      fk_soc: Number(clientId),
-      date: invoiceDataReturned.date || invoiceData.date || new Date().toISOString().split('T')[0],
-      total_ht: invoiceDataReturned.total_ht || invoiceDataReturned.invoice?.total_ht,
-      total_tva: invoiceDataReturned.total_tva || invoiceDataReturned.invoice?.total_tva,
-      total_ttc: invoiceDataReturned.total_ttc || invoiceDataReturned.invoice?.total_ttc,
-      paye: invoiceDataReturned.paye || invoiceDataReturned.invoice?.paye || 0,
-    };
-
-    console.log('[createInvoice] Facture créée avec ID:', invoiceId);
-    
-    if (!invoiceId) {
-      console.warn('[createInvoice] ATTENTION: Aucun ID trouvé dans la réponse, structure:', invoiceDataReturned);
+    // Vérifier qu'on a bien un ID
+    if (!invoiceId || isNaN(invoiceId)) {
+      console.warn('[createInvoice] ATTENTION: Aucun ID valide trouvé dans la réponse');
+      console.warn('[createInvoice] Type de réponse:', typeof response.data);
+      console.warn('[createInvoice] Contenu:', response.data);
+      throw new Error('Erreur lors de la création de la facture: aucun ID retourné par l\'API');
     }
 
-    return invoiceResult;
+    // Si on a l'ID, essayer de récupérer les détails complets de la facture
+    // Utiliser une petite attente pour s'assurer que la facture est bien créée dans Dolibarr
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    try {
+      // Récupérer la facture via l'API pour obtenir tous les détails
+      const apiClient = await dolibarrApi.getClient();
+      const invoiceResponse = await apiClient.get<any>(`/api/index.php/invoices/${invoiceId}`);
+      
+      // Dolibarr peut retourner la facture dans différents formats
+      let invoiceDetails: any = invoiceResponse.data || {};
+      
+      // Si la réponse est dans un objet wrapper (ex: { invoice: {...} })
+      if (invoiceDetails.invoice) {
+        invoiceDetails = invoiceDetails.invoice;
+      }
+      
+      const invoiceResult: DolibarrInvoice = {
+        id: invoiceId,
+        ref: invoiceDetails.ref || invoiceDetails.ref_ext || invoiceDataReturned.ref || invoiceDataReturned.invoice?.ref,
+        ref_ext: invoiceDetails.ref_ext || invoiceDataReturned.ref_ext || invoiceDataReturned.invoice?.ref_ext,
+        fk_soc: Number(clientId),
+        date: invoiceDetails.date || invoiceData.date || new Date().toISOString().split('T')[0],
+        total_ht: invoiceDetails.total_ht || invoiceDetails.totalht || invoiceDataReturned.total_ht || invoiceDataReturned.invoice?.total_ht,
+        total_tva: invoiceDetails.total_tva || invoiceDetails.totaltva || invoiceDataReturned.total_tva || invoiceDataReturned.invoice?.total_tva,
+        total_ttc: invoiceDetails.total_ttc || invoiceDetails.totalttc || invoiceDataReturned.total_ttc || invoiceDataReturned.invoice?.total_ttc,
+        paye: invoiceDetails.paye || invoiceDataReturned.paye || invoiceDataReturned.invoice?.paye || 0,
+      };
+      
+      console.log('[createInvoice] Facture créée avec succès, ID:', invoiceId, 'Ref:', invoiceResult.ref);
+      return invoiceResult;
+    } catch (error) {
+      console.warn('[createInvoice] Impossible de récupérer les détails de la facture, utilisation des données de base:', error);
+      // Si la récupération des détails échoue, créer un objet minimal avec l'ID et les données de la vente
+      const invoiceResult: DolibarrInvoice = {
+        id: invoiceId,
+        ref: invoiceDataReturned.ref || invoiceDataReturned.invoice?.ref,
+        ref_ext: invoiceDataReturned.ref_ext || invoiceDataReturned.invoice?.ref_ext,
+        fk_soc: Number(clientId),
+        date: invoiceData.date || new Date().toISOString().split('T')[0],
+        total_ht: invoiceDataReturned.total_ht || invoiceDataReturned.invoice?.total_ht || sale.total,
+        total_tva: invoiceDataReturned.total_tva || invoiceDataReturned.invoice?.total_tva || sale.total_tax,
+        total_ttc: invoiceDataReturned.total_ttc || invoiceDataReturned.invoice?.total_ttc || sale.total_ttc,
+        paye: invoiceDataReturned.paye || invoiceDataReturned.invoice?.paye || 0,
+      };
+      
+      console.log('[createInvoice] Facture créée avec ID minimal:', invoiceId);
+      return invoiceResult;
+    }
   } catch (error: any) {
     const errorMessage = error?.response?.data?.error || error?.message || 'Erreur inconnue';
     const errorDetails = error?.response?.data ? JSON.stringify(error.response.data, null, 2) : '';

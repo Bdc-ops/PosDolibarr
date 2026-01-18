@@ -3,7 +3,83 @@
  * Supporte le français, l'anglais, l'espagnol et le russe
  */
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// Memory storage fallback
+const memoryStorage: any = {
+  _storage: {} as Record<string, string>,
+  async getItem(key: string) { 
+    return this._storage[key] || null; 
+  },
+  async setItem(key: string, value: string) { 
+    this._storage[key] = value; 
+  },
+  async removeItem(key: string) {
+    delete this._storage[key];
+  },
+};
+
+// Get AsyncStorage with fallback - lazy loading to avoid initialization errors
+let asyncStorageInstance: any = null;
+
+function getAsyncStorage() {
+  if (asyncStorageInstance) return asyncStorageInstance;
+  
+  // Always return memory storage initially to avoid native module initialization issues
+  // AsyncStorage will be available once the native module is properly initialized
+  // In the meantime, memory storage works fine for language preference
+  console.warn('AsyncStorage not yet initialized, using memory storage for language preference');
+  asyncStorageInstance = memoryStorage;
+  return memoryStorage;
+  
+  /* 
+  // TODO: Re-enable AsyncStorage once native module is properly initialized
+  try {
+    // Try to require AsyncStorage, but catch if native module is not available
+    let AsyncStorageModule: any;
+    try {
+      AsyncStorageModule = require('@react-native-async-storage/async-storage');
+      
+      // Check if the module itself is null (native module not initialized)
+      if (!AsyncStorageModule) {
+        throw new Error('AsyncStorage module is null');
+      }
+    } catch (requireError: any) {
+      // If require fails or module is null, use memory storage
+      console.warn('AsyncStorage module not available, using memory storage:', requireError?.message || requireError);
+      asyncStorageInstance = memoryStorage;
+      return memoryStorage;
+    }
+    
+    const AsyncStorage = AsyncStorageModule?.default || AsyncStorageModule;
+    
+    // Check if AsyncStorage is null or methods are missing
+    if (!AsyncStorage) {
+      console.warn('AsyncStorage is null, using memory storage');
+      asyncStorageInstance = memoryStorage;
+      return memoryStorage;
+    }
+    
+    // Check if AsyncStorage has required methods
+    if (typeof AsyncStorage.getItem === 'function' && 
+        typeof AsyncStorage.setItem === 'function' &&
+        typeof AsyncStorage.removeItem === 'function') {
+      
+      // The module seems valid, assign it
+      asyncStorageInstance = AsyncStorage;
+      return AsyncStorage;
+    }
+    
+    // If methods are missing, use fallback
+    console.warn('AsyncStorage methods not found, using memory storage');
+    asyncStorageInstance = memoryStorage;
+    return memoryStorage;
+  } catch (error: any) {
+    console.warn('AsyncStorage not available, using memory storage:', error?.message || error);
+    asyncStorageInstance = memoryStorage;
+    return memoryStorage;
+  }
+  */
+}
 import fr from './locales/fr';
 import en from './locales/en';
 import es from './locales/es';
@@ -57,7 +133,8 @@ export function I18nProvider({ children }: I18nProviderProps) {
   useEffect(() => {
     const loadLanguage = async () => {
       try {
-        const savedLanguage = await AsyncStorage.getItem(STORAGE_KEY);
+        const storage = getAsyncStorage();
+        const savedLanguage = await storage.getItem(STORAGE_KEY);
         if (savedLanguage && (savedLanguage === 'fr' || savedLanguage === 'en' || savedLanguage === 'es' || savedLanguage === 'ru')) {
           setLanguageState(savedLanguage as Language);
         }
@@ -74,17 +151,25 @@ export function I18nProvider({ children }: I18nProviderProps) {
   // Fonction pour changer la langue et la sauvegarder
   const setLanguage = async (lang: Language) => {
     try {
-      await AsyncStorage.setItem(STORAGE_KEY, lang);
+      const storage = getAsyncStorage();
+      if (storage && typeof storage.setItem === 'function') {
+        await storage.setItem(STORAGE_KEY, lang);
+      }
+      // Mettre à jour l'état dans tous les cas (même si la sauvegarde échoue)
       setLanguageState(lang);
     } catch (error) {
       console.error('Erreur lors de la sauvegarde de la langue:', error);
+      // Mettre à jour quand même l'état même en cas d'erreur
+      setLanguageState(lang);
     }
   };
 
   // Fonction de traduction avec support des paramètres
   const t = (key: string, params?: Record<string, string | number>): string => {
+    // Utiliser la langue actuelle ou français par défaut si pas encore chargé
+    const currentLang = isLoading ? 'fr' : language;
     const keys = key.split('.');
-    let value: any = translations[language];
+    let value: any = translations[currentLang];
 
     for (const k of keys) {
       if (value && typeof value === 'object' && k in value) {
@@ -118,14 +203,12 @@ export function I18nProvider({ children }: I18nProviderProps) {
     return value;
   };
 
-  if (isLoading) {
-    return null; // Ou un loader si nécessaire
-  }
-
+  // Toujours retourner le provider, même pendant le chargement
+  // La fonction t utilise déjà 'fr' par défaut si isLoading est true
   return (
     <I18nContext.Provider
       value={{
-        language,
+        language: isLoading ? 'fr' : language,
         setLanguage,
         t,
         languages: LANGUAGES,

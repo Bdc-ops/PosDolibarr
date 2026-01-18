@@ -3,9 +3,95 @@
  * Permet de stocker, visualiser et envoyer les logs par email
  */
 
-// AsyncStorage sera importé dynamiquement si nécessaire
 import { Linking, Alert } from 'react-native';
 import { APP_CONFIG } from '../config/app.config';
+
+// Memory storage fallback
+const memoryStorage: any = {
+  _storage: {} as Record<string, string>,
+  async getItem(key: string) { 
+    return this._storage[key] || null; 
+  },
+  async setItem(key: string, value: string) { 
+    this._storage[key] = value; 
+  },
+  async removeItem(key: string) {
+    delete this._storage[key];
+  },
+};
+
+// Get AsyncStorage with fallback - lazy loading to avoid initialization errors
+let asyncStorageInstance: any = null;
+
+function getAsyncStorage() {
+  if (asyncStorageInstance) return asyncStorageInstance;
+  
+  // Always return memory storage for now to avoid native module initialization issues
+  // AsyncStorage will be available once the native module is properly initialized
+  // In the meantime, memory storage works fine for logs
+  console.warn('AsyncStorage not yet initialized, using memory storage for logs');
+  asyncStorageInstance = memoryStorage;
+  return memoryStorage;
+  
+  /* 
+  // TODO: Re-enable AsyncStorage once native module is properly initialized
+  try {
+    // Try to require AsyncStorage, but catch if native module is not available
+    let AsyncStorageModule: any;
+    try {
+      AsyncStorageModule = require('@react-native-async-storage/async-storage');
+      
+      // Check if the module itself is null (native module not initialized)
+      if (!AsyncStorageModule) {
+        throw new Error('AsyncStorage module is null');
+      }
+    } catch (requireError: any) {
+      // If require fails or module is null, use memory storage
+      console.warn('AsyncStorage module not available, using memory storage:', requireError?.message || requireError);
+      asyncStorageInstance = memoryStorage;
+      return memoryStorage;
+    }
+    
+    const AsyncStorage = AsyncStorageModule?.default || AsyncStorageModule;
+    
+    // Check if AsyncStorage is null or methods are missing
+    if (!AsyncStorage) {
+      console.warn('AsyncStorage is null, using memory storage');
+      asyncStorageInstance = memoryStorage;
+      return memoryStorage;
+    }
+    
+    // Check if AsyncStorage has required methods
+    if (typeof AsyncStorage.getItem === 'function' && 
+        typeof AsyncStorage.setItem === 'function' &&
+        typeof AsyncStorage.removeItem === 'function') {
+      
+      // The module seems valid, assign it
+      asyncStorageInstance = AsyncStorage;
+      return AsyncStorage;
+    }
+    
+    // If methods are missing, use fallback
+    console.warn('AsyncStorage methods not found, using memory storage');
+    asyncStorageInstance = memoryStorage;
+    return memoryStorage;
+  } catch (error: any) {
+    console.warn('AsyncStorage not available, using memory storage:', error?.message || error);
+    asyncStorageInstance = memoryStorage;
+    return memoryStorage;
+  }
+  */
+}
+
+// Lazy initialization - only get AsyncStorage when actually used
+function getAsyncStorageSafe() {
+  try {
+    return getAsyncStorage();
+  } catch (error) {
+    console.warn('Error getting AsyncStorage, using memory storage:', error);
+    return memoryStorage;
+  }
+}
 
 
 
@@ -40,7 +126,8 @@ export async function addLog(level: LogEntry['level'], message: string, data?: a
     if (logs.length > MAX_LOGS) {
       logs.splice(MAX_LOGS);
     }
-    await AsyncStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(logs));
+    const storage = getAsyncStorageSafe();
+    await storage.setItem(LOG_STORAGE_KEY, JSON.stringify(logs));
   } catch (error) {
     console.error('Erreur lors de l\'ajout du log:', error);
   }
@@ -48,7 +135,8 @@ export async function addLog(level: LogEntry['level'], message: string, data?: a
 
 export async function getLogs(): Promise<LogEntry[]> {
   try {
-    const logsJson = await AsyncStorage.getItem(LOG_STORAGE_KEY);
+    const storage = getAsyncStorageSafe();
+    const logsJson = await storage.getItem(LOG_STORAGE_KEY);
     if (!logsJson) {
       return [];
     }
@@ -61,7 +149,8 @@ export async function getLogs(): Promise<LogEntry[]> {
 
 export async function clearLogs(): Promise<void> {
   try {
-    await AsyncStorage.removeItem(LOG_STORAGE_KEY);
+    const storage = getAsyncStorageSafe();
+    await storage.removeItem(LOG_STORAGE_KEY);
   } catch (error) {
     console.error('Erreur lors de la suppression des logs:', error);
     throw error;

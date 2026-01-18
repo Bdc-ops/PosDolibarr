@@ -13,7 +13,8 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { dolibarrClient } from "../api/dolibarr.client"
 import { UsersAPI, type DolibarrUser } from "../api/users"
-import { AuthContext } from "../../App"
+import { AuthContext } from "../contexts/AuthContext"
+import { useDemo } from "../contexts/DemoContext"
 
 interface AccountScreenProps {
   navigation: any
@@ -21,6 +22,7 @@ interface AccountScreenProps {
 
 export default function AccountScreen({ navigation }: AccountScreenProps) {
   const { logout } = useContext(AuthContext)
+  const { isDemoMode, disableDemoMode } = useDemo()
   const [apiUrl, setApiUrl] = useState("")
   const [apiKey, setApiKey] = useState("")
   const [user, setUser] = useState<DolibarrUser | null>(null)
@@ -155,6 +157,7 @@ export default function AccountScreen({ navigation }: AccountScreenProps) {
                 "dolibarr_config",
                 "user_location",
                 "degraded_mode",
+                "demo_mode",
               ])
               // Nettoyer tous les clés de cache AsyncStorage (au cas où)
               const allKeys = await AsyncStorage.getAllKeys()
@@ -320,14 +323,44 @@ export default function AccountScreen({ navigation }: AccountScreenProps) {
             <Text style={styles.sectionTitle}>Actions</Text>
           </View>
 
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => navigation.navigate("Configuration")}
-          >
-            <Text style={styles.actionIcon}>⚙️</Text>
-            <Text style={styles.actionButtonText}>Modifier la configuration</Text>
-            <Text style={styles.actionChevron}>›</Text>
-          </TouchableOpacity>
+          {isDemoMode && (
+            <TouchableOpacity
+              style={[styles.actionButton, styles.demoButton]}
+              onPress={async () => {
+                Alert.alert(
+                  "Désactiver le mode démo",
+                  "Voulez-vous désactiver le mode démonstration et revenir à l'écran de connexion ?",
+                  [
+                    { text: "Annuler", style: "cancel" },
+                    {
+                      text: "Désactiver",
+                      onPress: async () => {
+                        await disableDemoMode()
+                        logout()
+                      },
+                    },
+                  ],
+                )
+              }}
+            >
+              <Text style={styles.actionIcon}>🎭</Text>
+              <Text style={[styles.actionButtonText, styles.demoButtonText]}>
+                Désactiver le mode démo
+              </Text>
+              <Text style={[styles.actionChevron, styles.demoButtonText]}>›</Text>
+            </TouchableOpacity>
+          )}
+
+          {!isDemoMode && (
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => navigation.navigate("Configuration")}
+            >
+              <Text style={styles.actionIcon}>⚙️</Text>
+              <Text style={styles.actionButtonText}>Modifier la configuration</Text>
+              <Text style={styles.actionChevron}>›</Text>
+            </TouchableOpacity>
+          )}
 
           <TouchableOpacity
             style={[styles.actionButton, styles.logoutButton]}
@@ -535,6 +568,13 @@ const styles = StyleSheet.create({
   },
   logoutButtonText: {
     color: "#FF6B35",
+  },
+  demoButton: {
+    backgroundColor: "rgba(26, 147, 111, 0.12)",
+    borderColor: "rgba(26, 147, 111, 0.2)",
+  },
+  demoButtonText: {
+    color: "#1A936F",
   },
   supportInfo: {
     marginTop: 8,

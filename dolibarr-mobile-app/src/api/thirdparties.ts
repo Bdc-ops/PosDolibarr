@@ -3,8 +3,16 @@ import { dolibarrClient } from "./dolibarr.client"
 import type { ThirdParty, ApiResponse } from "../types/dolibarr.types"
 import type { ThirdPartyMode } from "../utils/dolibarrMode"
 import { isValidDolibarrFilter } from "../utils/dolibarrFilters"
+import AsyncStorage from "@react-native-async-storage/async-storage"
+import { demoThirdParties, demoCustomerCategories, filterDemoData } from "../utils/demoData"
+import { buildSortParams } from "../utils/dolibarrSort"
 
 let thirdpartiesUnavailable = false
+
+async function isDemoMode(): Promise<boolean> {
+  const demoMode = await AsyncStorage.getItem("demo_mode")
+  return demoMode === "true"
+}
 
 export const ThirdPartiesAPI = {
   // Récupérer tous les tiers
@@ -16,6 +24,13 @@ export const ThirdPartiesAPI = {
     mode?: ThirdPartyMode
     sqlfilters?: string
   }): Promise<ThirdParty[]> {
+    if (await isDemoMode()) {
+      let filtered = filterDemoData(demoThirdParties, params)
+      if (params?.mode === "customer") {
+        filtered = filtered.filter((t) => t.client === "1" || t.client === 1)
+      }
+      return filtered
+    }
     if (thirdpartiesUnavailable) {
       return []
     }
@@ -72,6 +87,11 @@ export const ThirdPartiesAPI = {
 
   // Récupérer un tiers par ID
   async getById(id: string): Promise<ThirdParty> {
+    if (await isDemoMode()) {
+      const thirdParty = demoThirdParties.find((t) => t.id === id)
+      if (!thirdParty) throw new Error("Tiers non trouvé")
+      return thirdParty
+    }
     return dolibarrClient.get<ThirdParty>(`/thirdparties/${id}`)
   },
 
@@ -79,12 +99,27 @@ export const ThirdPartiesAPI = {
   async search(query: string): Promise<ThirdParty[]> {
     // Syntaxe Dolibarr correcte pour la recherche
     // Format: (field:like:'%text%')
+    const sortParams = buildSortParams("thirdparties", "DESC", "date")
     const sqlfilters = `(nom:like:'%${query}%') OR (email:like:'%${query}%')`
-    return this.getAll({ sqlfilters, limit: 50, page: 0 })
+    return this.getAll({ sqlfilters, limit: 50, page: 0, ...sortParams })
   },
 
   // Récupérer les catégories d'un tiers
   async getCategories(thirdpartyId: string | number): Promise<any[]> {
+    if (await isDemoMode()) {
+      // Assigner des catégories selon l'ID du client
+      const categoryMap: Record<string, string[]> = {
+        "1": ["11"], // Entreprise
+        "2": ["11"], // Entreprise
+        "3": ["10"], // Particulier
+        "4": ["12"], // Revendeur
+      }
+      const categoryIds = categoryMap[String(thirdpartyId)] || []
+      return categoryIds.map((id) => ({
+        id,
+        label: demoCustomerCategories.find((c) => c.id === id)?.label || "",
+      }))
+    }
     try {
       const response = await dolibarrClient.get<any[]>(`/thirdparties/${thirdpartyId}/categories`)
       return Array.isArray(response) ? response : []

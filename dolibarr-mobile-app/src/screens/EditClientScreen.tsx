@@ -39,6 +39,7 @@ export default function EditClientScreen({ navigation, route }: EditClientScreen
   const [town, setTown] = useState(initialClient?.town || "")
   const [codeClient, setCodeClient] = useState(initialClient?.code_client || "")
   const [tvaIntra, setTvaIntra] = useState(initialClient?.tva_intra || "")
+  const [siret, setSiret] = useState((initialClient as any)?.siret || (initialClient as any)?.idprof1 || (initialClient as any)?.siren || "")
   const [saving, setSaving] = useState(false)
   const [mapModule, setMapModule] = useState<any>(null)
   const [clientCoords, setClientCoords] = useState<{ latitude: number; longitude: number } | null>(null)
@@ -114,15 +115,15 @@ export default function EditClientScreen({ navigation, route }: EditClientScreen
 
   const handleSave = async () => {
     if (!name.trim()) {
-      Alert.alert("Erreur", "Le nom est obligatoire")
+      console.warn("⚠️ Tentative de sauvegarde sans nom")
       return
     }
     if (!clientType) {
-      Alert.alert("Erreur", "Veuillez sélectionner le type (client ou prospect)")
+      console.warn("⚠️ Tentative de sauvegarde sans type de client")
       return
     }
     if (clientType === "0" && isSupplier === "0") {
-      Alert.alert("Erreur", "Veuillez sélectionner Client/Prospect ou Fournisseur")
+      console.warn("⚠️ Tentative de sauvegarde sans type (client ou fournisseur)")
       return
     }
 
@@ -142,7 +143,10 @@ export default function EditClientScreen({ navigation, route }: EditClientScreen
         tva_intra: tvaIntra.trim() || undefined,
         client: clientType,
         fournisseur: isSupplier,
-      }
+        // Ajouter SIRET (Dolibarr utilise généralement idprof1 pour SIRET)
+        idprof1: siret.trim() || undefined,
+        siret: siret.trim() || undefined,
+      } as any
       console.log("📤 [ThirdParty] create payload:", JSON.stringify(clientData))
 
       let result
@@ -163,11 +167,11 @@ export default function EditClientScreen({ navigation, route }: EditClientScreen
             { text: "OK", onPress: () => navigation.goBack() },
           ])
         } else {
-          Alert.alert("Erreur", result.error || "Impossible de créer le client")
+          console.warn("⚠️ Erreur lors de la création du client:", result.error || "Erreur inconnue")
         }
       } else {
         if (!initialClient?.id) {
-          Alert.alert("Erreur", "ID client manquant")
+          console.warn("⚠️ ID client manquant pour la modification")
           return
         }
         result = await ThirdPartiesAPI.update(initialClient.id, clientData)
@@ -186,11 +190,11 @@ export default function EditClientScreen({ navigation, route }: EditClientScreen
             { text: "OK", onPress: () => navigation.goBack() },
           ])
         } else {
-          Alert.alert("Erreur", result.error || "Impossible de modifier le client")
+          console.warn("⚠️ Erreur lors de la modification du client:", result.error || "Erreur inconnue")
         }
       }
     } catch (error: any) {
-      Alert.alert("Erreur", error.message || "Une erreur est survenue")
+      console.warn("⚠️ Erreur lors de la sauvegarde du client:", error.message || error)
     } finally {
       setSaving(false)
     }
@@ -201,6 +205,71 @@ export default function EditClientScreen({ navigation, route }: EditClientScreen
       <View style={styles.backgroundGlow} />
       <View style={styles.backgroundGlowSecondary} />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      {/* Section d'affichage des informations en mode consultation */}
+      {mode === "edit" && initialClient && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Informations du client</Text>
+          
+          <View style={styles.infoDisplayRow}>
+            <Text style={styles.infoDisplayLabel}>Nom:</Text>
+            <Text style={styles.infoDisplayValue}>{initialClient.name}</Text>
+          </View>
+          
+          {initialClient.name_alias && (
+            <View style={styles.infoDisplayRow}>
+              <Text style={styles.infoDisplayLabel}>Nom commercial:</Text>
+              <Text style={styles.infoDisplayValue}>{initialClient.name_alias}</Text>
+            </View>
+          )}
+          
+          {initialClient.code_client && (
+            <View style={styles.infoDisplayRow}>
+              <Text style={styles.infoDisplayLabel}>Code client:</Text>
+              <Text style={styles.infoDisplayValue}>{initialClient.code_client}</Text>
+            </View>
+          )}
+          
+          {(initialClient as any)?.siret || (initialClient as any)?.idprof1 ? (
+            <View style={styles.infoDisplayRow}>
+              <Text style={styles.infoDisplayLabel}>SIRET:</Text>
+              <Text style={styles.infoDisplayValue}>
+                {(initialClient as any)?.siret || (initialClient as any)?.idprof1}
+              </Text>
+            </View>
+          ) : null}
+          
+          {initialClient.tva_intra && (
+            <View style={styles.infoDisplayRow}>
+              <Text style={styles.infoDisplayLabel}>TVA intracommunautaire:</Text>
+              <Text style={styles.infoDisplayValue}>{initialClient.tva_intra}</Text>
+            </View>
+          )}
+          
+          {initialClient.email && (
+            <View style={styles.infoDisplayRow}>
+              <Text style={styles.infoDisplayLabel}>Email:</Text>
+              <Text style={styles.infoDisplayValue}>{initialClient.email}</Text>
+            </View>
+          )}
+          
+          {initialClient.phone && (
+            <View style={styles.infoDisplayRow}>
+              <Text style={styles.infoDisplayLabel}>Téléphone:</Text>
+              <Text style={styles.infoDisplayValue}>{initialClient.phone}</Text>
+            </View>
+          )}
+          
+          {(initialClient.address || initialClient.zip || initialClient.town) && (
+            <View style={styles.infoDisplayRow}>
+              <Text style={styles.infoDisplayLabel}>Adresse:</Text>
+              <Text style={styles.infoDisplayValue}>
+                {[initialClient.address, initialClient.zip, initialClient.town].filter(Boolean).join(" ")}
+              </Text>
+            </View>
+          )}
+        </View>
+      )}
+      
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Type de tiers</Text>
         <View style={styles.optionRow}>
@@ -376,6 +445,18 @@ export default function EditClientScreen({ navigation, route }: EditClientScreen
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Informations fiscales</Text>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>SIRET</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="12345678901234"
+            value={siret}
+            onChangeText={setSiret}
+            keyboardType="numeric"
+            maxLength={14}
+          />
+        </View>
 
         <View style={styles.inputGroup}>
           <Text style={styles.label}>TVA intracommunautaire</Text>
@@ -567,5 +648,23 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
+  },
+  infoDisplayRow: {
+    flexDirection: "row",
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(14, 27, 46, 0.08)",
+  },
+  infoDisplayLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#5C6B82",
+    width: 140,
+    flexShrink: 0,
+  },
+  infoDisplayValue: {
+    fontSize: 14,
+    color: "#0E1B2E",
+    flex: 1,
   },
 })

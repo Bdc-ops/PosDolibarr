@@ -44,7 +44,7 @@ export default function ConfigurationScreen({ navigation }: any) {
 
   const handleSave = async () => {
     if (!apiUrl.trim() || !apiKey.trim()) {
-      Alert.alert("Erreur", "Veuillez remplir tous les champs")
+      console.warn("⚠️ Tentative de sauvegarde avec des champs vides")
       return
     }
 
@@ -53,7 +53,7 @@ export default function ConfigurationScreen({ navigation }: any) {
       await dolibarrClient.setConfig(apiUrl.trim(), apiKey.trim())
       Alert.alert("Succès", "Configuration enregistrée avec succès")
     } catch (error: any) {
-      Alert.alert("Erreur", error.message || "Impossible de sauvegarder la configuration")
+      console.warn("⚠️ Erreur lors de la sauvegarde de la configuration:", error.message || error)
     } finally {
       setLoading(false)
     }
@@ -61,7 +61,7 @@ export default function ConfigurationScreen({ navigation }: any) {
 
   const handleTestConnection = async () => {
     if (!apiUrl.trim() || !apiKey.trim()) {
-      Alert.alert("Erreur", "Veuillez remplir tous les champs")
+      console.warn("⚠️ Tentative de test de connexion avec des champs vides")
       return
     }
 
@@ -71,10 +71,7 @@ export default function ConfigurationScreen({ navigation }: any) {
       await dolibarrClient.get("/products", { limit: 1 })
       Alert.alert("Succès", "Connexion réussie à l'API Dolibarr")
     } catch (error: any) {
-      Alert.alert(
-        "Erreur de connexion",
-        error.message || "Impossible de se connecter à l'API Dolibarr",
-      )
+      console.warn("⚠️ Erreur de connexion:", error.message || error)
     } finally {
       setLoading(false)
     }
@@ -94,7 +91,7 @@ export default function ConfigurationScreen({ navigation }: any) {
               await dolibarrClient.clearCache()
               Alert.alert("Succès", "Cache nettoyé avec succès")
             } catch (error) {
-              Alert.alert("Erreur", "Impossible de nettoyer le cache")
+              console.warn("⚠️ Erreur lors du nettoyage du cache")
             }
           },
         },

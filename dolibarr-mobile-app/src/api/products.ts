@@ -1,6 +1,14 @@
 // API Produits - Fonctions CRUD complètes
 import { dolibarrClient } from "./dolibarr.client"
 import type { Product, Stock, ApiResponse } from "../types/dolibarr.types"
+import AsyncStorage from "@react-native-async-storage/async-storage"
+import { demoProducts, demoCategories, filterDemoData } from "../utils/demoData"
+import { buildSortParams } from "../utils/dolibarrSort"
+
+async function isDemoMode(): Promise<boolean> {
+  const demoMode = await AsyncStorage.getItem("demo_mode")
+  return demoMode === "true"
+}
 
 export const ProductsAPI = {
   // Récupérer tous les produits
@@ -12,12 +20,18 @@ export const ProductsAPI = {
     category?: string
     sqlfilters?: string
   }): Promise<Product[]> {
+    if (await isDemoMode()) {
+      return filterDemoData(demoProducts, params)
+    }
     return dolibarrClient.get<Product[]>("/products", params)
   },
 
   // Récupérer le nombre total réel de produits depuis l'API Dolibarr
   // Utilise les headers de réponse (X-Total-Count) ou une estimation via pagination
   async getTotal(): Promise<number> {
+    if (await isDemoMode()) {
+      return demoProducts.length
+    }
     try {
       // Essayer d'obtenir le total depuis les headers HTTP (X-Total-Count est un standard REST)
       // Note: dolibarrClient.get ne retourne pas directement les headers
@@ -27,7 +41,8 @@ export const ProductsAPI = {
       // Puis une requête avec limit=5000 pour obtenir le maximum possible
       // Si on obtient 5000 résultats, il y a probablement plus (on retourne 5001 pour indiquer "5000+")
       
-      const firstPage = await dolibarrClient.get<Product[]>("/products", { limit: 1, page: 0 })
+      const sortParams = buildSortParams("products", "DESC", "date")
+      const firstPage = await dolibarrClient.get<Product[]>("/products", { limit: 1, page: 0, ...sortParams })
       
       if (!Array.isArray(firstPage)) {
         return 0
@@ -38,7 +53,7 @@ export const ProductsAPI = {
       }
       
       // Faire une requête avec limit=5000 pour obtenir le maximum chargé
-      const maxPage = await dolibarrClient.get<Product[]>("/products", { limit: 5000, page: 0 })
+      const maxPage = await dolibarrClient.get<Product[]>("/products", { limit: 5000, page: 0, ...sortParams })
       
       if (!Array.isArray(maxPage)) {
         return firstPage.length
@@ -57,7 +72,8 @@ export const ProductsAPI = {
       
       // En cas d'erreur (timeout, 503, etc.), essayer de récupérer depuis le cache
       try {
-        const cached = await dolibarrClient.get<Product[]>("/products", { limit: 5000, page: 0 })
+        const sortParams = buildSortParams("products", "DESC", "date")
+        const cached = await dolibarrClient.get<Product[]>("/products", { limit: 5000, page: 0, ...sortParams })
         if (Array.isArray(cached)) {
           // Si on a un cache avec 5000 éléments, c'est probablement le maximum chargé
           return cached.length === 5000 ? 5001 : cached.length
@@ -73,13 +89,27 @@ export const ProductsAPI = {
 
   // Récupérer un produit par ID
   async getById(id: string): Promise<Product> {
+    if (await isDemoMode()) {
+      const product = demoProducts.find((p) => p.id === id)
+      if (!product) throw new Error("Produit non trouvé")
+      return product
+    }
     return dolibarrClient.get<Product>(`/products/${id}`)
   },
 
   // Rechercher des produits
   async search(query: string): Promise<Product[]> {
+    if (await isDemoMode()) {
+      const lowerQuery = query.toLowerCase()
+      return demoProducts.filter(
+        (p) =>
+          p.ref?.toLowerCase().includes(lowerQuery) ||
+          p.label?.toLowerCase().includes(lowerQuery)
+      )
+    }
+    const sortParams = buildSortParams("products", "DESC", "date")
     const sqlfilters = `(t.ref:like:'%${query}%') OR (t.label:like:'%${query}%')`
-    return this.getAll({ sqlfilters })
+    return this.getAll({ sqlfilters, ...sortParams })
   },
 
   // Créer un nouveau produit
@@ -140,6 +170,27 @@ export const ProductsAPI = {
 
   // Récupérer les catégories d'un produit
   async getCategories(productId: string | number): Promise<any[]> {
+    if (await isDemoMode()) {
+      // Retourner quelques catégories pour les produits en mode démo
+      const product = demoProducts.find((p) => p.id === String(productId))
+      if (!product) return []
+      // Assigner des catégories selon l'ID du produit
+      const categoryMap: Record<string, string[]> = {
+        "1": ["1"], // Électronique
+        "2": ["2"], // Vêtements
+        "3": ["3"], // Alimentaire
+        "4": ["4"], // Maison & Jardin
+        "5": ["1"], // Électronique
+        "6": ["2"], // Vêtements
+        "7": ["3"], // Alimentaire
+        "8": ["4"], // Maison & Jardin
+      }
+      const categoryIds = categoryMap[String(productId)] || []
+      return categoryIds.map((id) => ({
+        id,
+        label: demoCategories.find((c) => c.id === id)?.label || "",
+      }))
+    }
     try {
       // Appel simple sans paramètres de tri (comme demandé)
       const response = await dolibarrClient.get<any[]>(`/products/${productId}/categories`)

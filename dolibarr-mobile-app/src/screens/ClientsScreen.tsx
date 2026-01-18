@@ -28,7 +28,7 @@ export default function ClientsScreen({ navigation }: any) {
   const { customerCategories } = useCategories()
   const [searchQuery, setSearchQuery] = useState("")
   const [viewMode, setViewMode] = useState<ViewMode>("list")
-  const [sortMode, setSortMode] = useState<SortMode>("alphabetical")
+  const [sortMode, setSortMode] = useState<SortMode>("none") // Par défaut, conserver le tri par date de l'API
   const [selectedTag, setSelectedTag] = useState<string | undefined>(undefined)
   const [searchResults, setSearchResults] = useState<ThirdParty[]>([])
   const [searchLoading, setSearchLoading] = useState(false)
@@ -202,7 +202,7 @@ export default function ClientsScreen({ navigation }: any) {
               Alert.alert("Succès", "Client supprimé avec succès")
               reload()
             } else {
-              Alert.alert("Erreur", result.error || "Impossible de supprimer le client")
+              console.warn("⚠️ Erreur lors de la suppression du client:", result.error || "Erreur inconnue")
             }
           },
         },

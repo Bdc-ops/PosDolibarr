@@ -33,11 +33,9 @@
   "submit": {
     "production": {
       "ios": {
-        "appleId": "YOUR_APPLE_ID@email.com"
-      },
-      "android": {
-        "serviceAccountKeyPath": "./google-service-account.json",
-        "track": "production"
+        "appleId": "fahd@anexys.fr",
+        "ascAppId": "6757766635",
+        "appleTeamId": "ZC7K85CL4Q"
       }
     }
   }

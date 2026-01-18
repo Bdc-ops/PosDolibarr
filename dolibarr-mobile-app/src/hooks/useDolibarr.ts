@@ -62,7 +62,8 @@ export function useProducts(autoLoad = true) {
         const page = initialLoad ? 0 : currentPage + 1
         
         // Préparer les paramètres avec le filtre de catégorie si présent
-        const apiParams: any = { limit: pageSize, page }
+        const sortParams = buildSortParams("products", "DESC", "date")
+        const apiParams: any = { limit: pageSize, page, ...sortParams }
         if (activeCategoryFilter) {
           // Utiliser le paramètre category de l'API Dolibarr
           apiParams.category = activeCategoryFilter
@@ -127,8 +128,9 @@ export function useProducts(autoLoad = true) {
     }
 
     try {
+      const sortParams = buildSortParams("products", "DESC", "date")
       const page = currentPage + 1
-      const apiParams: any = { limit: PAGE_SIZE, page }
+      const apiParams: any = { limit: PAGE_SIZE, page, ...sortParams }
       if (categoryFilter) {
         apiParams.category = categoryFilter
       }
@@ -233,10 +235,11 @@ export function useThirdParties(mode: "customer" | "supplier" | "all" = "custome
     setError(null)
     
     try {
+      const sortParams = buildSortParams("thirdparties", "DESC", "date")
       const pageSize = initialLoad ? INITIAL_SIZE : PAGE_SIZE
       const page = initialLoad ? 0 : currentPage + 1
       
-      const pageData = await ThirdPartiesAPI.getAll({ mode, limit: pageSize, page })
+      const pageData = await ThirdPartiesAPI.getAll({ mode, limit: pageSize, page, ...sortParams })
       
       if (Array.isArray(pageData) && pageData.length > 0) {
         if (initialLoad) {
@@ -296,8 +299,9 @@ export function useThirdParties(mode: "customer" | "supplier" | "all" = "custome
     }
 
     try {
+      const sortParams = buildSortParams("thirdparties", "DESC", "date")
       const page = currentPage + 1
-      const pageData = await ThirdPartiesAPI.getAll({ mode, limit: PAGE_SIZE, page })
+      const pageData = await ThirdPartiesAPI.getAll({ mode, limit: PAGE_SIZE, page, ...sortParams })
       
       if (Array.isArray(pageData) && pageData.length > 0) {
         setThirdParties(prev => {

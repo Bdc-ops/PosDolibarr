@@ -227,12 +227,22 @@ class DolibarrApiClient {
    */
   async getClient(): Promise<AxiosInstance> {
     if (this.client && this.currentServerUrl) {
+      // Vérifier que le token est toujours valide
+      const token = await getSecureItem(APP_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+      if (!token) {
+        // Token manquant, réinitialiser
+        this.client = null as any;
+        this.currentServerUrl = null;
+        throw new Error('Client API non initialisé. Veuillez vous connecter.');
+      }
       return this.client;
     }
 
     // Essaie de récupérer l'URL stockée
     const storedUrl = await getSecureItem(APP_CONFIG.STORAGE_KEYS.SERVER_URL);
-    if (storedUrl) {
+    const storedToken = await getSecureItem(APP_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+    
+    if (storedUrl && storedToken) {
       this.initializeClient(storedUrl);
       if (this.client) {
         return this.client;

@@ -92,11 +92,32 @@ class DolibarrClient {
           })
         }
 
-        // Ne pas logger les erreurs 404 pour /products/{id}/categories (produit sans catégories = normal)
-        const isCategories404 = endpoint.includes("/products/") && endpoint.includes("/categories") && status === 404
+        // Ne pas logger les erreurs 404 pour certains cas normaux :
+        // - /products/{id}/categories (produit sans catégories = normal)
+        // - /orders ou /invoices avec "No order found" ou "No invoice found" (page vide = normal)
+        // - /products avec "No product found" (page vide = normal)
+        const errorMessage = String(
+          (errorData as any)?.error?.message ||
+          (errorData as any)?.message ||
+          error.message ||
+          ""
+        )
         
-        if (!isCategories404) {
-          // Logger l'erreur avec tous les détails (sauf 404 catégories)
+        const isCategories404 = endpoint.includes("/products/") && endpoint.includes("/categories") && status === 404
+        const isOrdersInvoices404 = 
+          status === 404 && 
+          (endpoint === "/orders" || endpoint === "/invoices") &&
+          (errorMessage.includes("No order found") || errorMessage.includes("No invoice found"))
+        
+        // Vérifier pour /products avec 404 et message "No product found" (page vide = normal)
+        const isProducts404 = 
+          status === 404 && 
+          endpoint === "/products" &&
+          errorMessage.includes("No product found")
+        
+        // Vérifier AVANT de logger pour éviter d'afficher les erreurs 404 normales
+        if (!isCategories404 && !isOrdersInvoices404 && !isProducts404) {
+          // Logger l'erreur avec tous les détails (sauf 404 normaux)
           console.error("❌ Dolibarr API Error:", {
             endpoint,
             params: JSON.stringify(params),
@@ -110,6 +131,20 @@ class DolibarrClient {
         // Retourner un tableau vide directement sans rejeter
         if (status === 404 && endpoint.includes("/products/") && endpoint.includes("/categories")) {
           // Produit sans catégories - retourner tableau vide (pas une erreur)
+          return { data: [], fromCache: false, is404: true }
+        }
+
+        // PROTECTION GLOBALE : Erreur 404 pour /orders ou /invoices avec "No order/invoice found" (page vide = normal)
+        // Retourner un tableau vide directement sans rejeter
+        if (isOrdersInvoices404) {
+          // Page vide (pas assez de données) - retourner tableau vide (pas une erreur)
+          return { data: [], fromCache: false, is404: true }
+        }
+
+        // PROTECTION GLOBALE : Erreur 404 pour /products avec "No product found" (page vide = normal)
+        // Retourner un tableau vide directement sans rejeter
+        if (isProducts404) {
+          // Page vide (pas assez de produits) - retourner tableau vide (pas une erreur)
           return { data: [], fromCache: false, is404: true }
         }
 
@@ -613,6 +648,11 @@ class DolibarrClient {
         
         // Si la réponse vient du cache en mode dégradé, retourner directement
         if (response?.fromCache && response?.degradedMode) {
+          return response.data
+        }
+        
+        // Si c'est une réponse 404 normale (page vide), retourner directement data
+        if (response?.is404 && response?.data !== undefined) {
           return response.data
         }
         

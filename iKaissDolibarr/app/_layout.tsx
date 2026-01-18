@@ -63,8 +63,7 @@ export default function RootLayout() {
           <Stack.Screen
             name="(pos)/index"
             options={{
-              title: 'Caisse',
-              headerRight: () => null, // Le bouton de config est dans le composant
+              headerShown: false, // Header personnalisé dans le composant
             }}
           />
           <Stack.Screen

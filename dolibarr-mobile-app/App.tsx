@@ -26,28 +26,27 @@ import EditClientScreen from "./src/screens/EditClientScreen"
 import ClientsScreen from "./src/screens/ClientsScreen"
 import AccountScreen from "./src/screens/AccountScreen"
 import DegradedModeBanner from "./src/components/DegradedModeBanner"
+import DemoModeBanner from "./src/components/DemoModeBanner"
 import LoadingScreen from "./src/components/LoadingScreen"
+import FloatingActionButton from "./src/components/FloatingActionButton"
 import { LoadingProvider } from "./src/contexts/LoadingContext"
 import { CategoriesProvider, useCategories } from "./src/contexts/CategoriesContext"
+import { DemoProvider, useDemo } from "./src/contexts/DemoContext"
 import GlobalLoadingBar from "./src/components/GlobalLoadingBar"
 import { InvoicesAPI } from "./src/api/invoices"
 import { OrdersAPI } from "./src/api/orders"
 import { buildSortParams } from "./src/utils/dolibarrSort"
+import { AuthContext } from "./src/contexts/AuthContext"
 
 const Stack = createStackNavigator()
 const Tab = createBottomTabNavigator()
-
-export const AuthContext = React.createContext({
-  login: () => {},
-  logout: () => {},
-})
 
 // 🚀 Fonction de préchargement des données de statistiques
 async function preloadStatsData() {
   console.log("🔄 [App] Préchargement des données statistiques en background...")
   
   try {
-    // Charger 1000 factures en background (10 pages de 100)
+    // Charger les factures en background (jusqu'à 10 pages de 100, arrêt si 404)
     const invoicesPromises = []
     for (let page = 0; page < 10; page++) {
       invoicesPromises.push(
@@ -56,13 +55,17 @@ async function preloadStatsData() {
           page,
           ...buildSortParams("invoices", "DESC", "date"),
         }).catch(err => {
-          console.warn(`⚠️ [Preload] Erreur page ${page + 1} factures:`, err.message)
+          // 404 = pas assez de factures, c'est normal, ne pas logger
+          const is404 = err?.response?.status === 404 || err?.is404
+          if (!is404) {
+            console.warn(`⚠️ [Preload] Erreur page ${page + 1} factures:`, err.message)
+          }
           return []
         })
       )
     }
     
-    // Charger 1000 commandes en background (10 pages de 100)
+    // Charger les commandes en background (jusqu'à 10 pages de 100, arrêt si 404)
     const ordersPromises = []
     for (let page = 0; page < 10; page++) {
       ordersPromises.push(
@@ -71,7 +74,11 @@ async function preloadStatsData() {
           page,
           ...buildSortParams("orders", "DESC", "date"),
         }).catch(err => {
-          console.warn(`⚠️ [Preload] Erreur page ${page + 1} commandes:`, err.message)
+          // 404 = pas assez de commandes, c'est normal, ne pas logger
+          const is404 = err?.response?.status === 404 || err?.is404
+          if (!is404) {
+            console.warn(`⚠️ [Preload] Erreur page ${page + 1} commandes:`, err.message)
+          }
           return []
         })
       )
@@ -86,11 +93,12 @@ async function preloadStatsData() {
   }
 }
 
-function MainTabs() {
+function MainTabs({ navigation }: any) {
   return (
     <>
       <GlobalLoadingBar />
       <DegradedModeBanner />
+      <DemoModeBanner />
       <Tab.Navigator
         screenOptions={({ route }) => ({
           headerStyle: { backgroundColor: "#004E89" },
@@ -187,6 +195,14 @@ export default function App() {
 
   const checkAuth = async () => {
     try {
+      // Vérifier d'abord si le mode démo est activé
+      const demoMode = await AsyncStorage.getItem("demo_mode")
+      if (demoMode === "true") {
+        setIsAuthenticated(true)
+        setIsLoading(false)
+        return
+      }
+
       // Charger la config depuis AsyncStorage
       await dolibarrClient.loadConfig()
       const stored = await AsyncStorage.getItem("dolibarr_config")
@@ -278,6 +294,12 @@ export default function App() {
     return null
   }
 
+  // Composant pour afficher conditionnellement le FAB
+  // Le WaveFAB dans OrdersScreen masquera visuellement ce FAB avec son z-index
+  function ConditionalFAB() {
+    return <FloatingActionButton />
+  }
+
   // Toujours rendre NavigationContainer pour éviter les crashes
   // Afficher un écran de chargement pendant l'initialisation
   if (isLoading) {
@@ -290,12 +312,13 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <LoadingProvider>
-        <CategoriesProvider>
-          <AuthContext.Provider value={{ login: handleLoginSuccess, logout: handleLogout }}>
-            <StatusBar style="auto" />
-            <AuthenticatedApp />
-            <NavigationContainer>
+      <DemoProvider>
+        <LoadingProvider>
+          <CategoriesProvider>
+            <AuthContext.Provider value={{ login: handleLoginSuccess, logout: handleLogout }}>
+              <StatusBar style="auto" />
+              <AuthenticatedApp />
+              <NavigationContainer>
         <Stack.Navigator
         screenOptions={{
           headerShown: false,
@@ -326,11 +349,12 @@ export default function App() {
             <>
               <Stack.Screen 
                 name="MainTabs" 
-                component={MainTabs}
                 options={{
                   headerShown: false,
                 }}
-              />
+              >
+                {(props) => <MainTabs {...props} />}
+              </Stack.Screen>
               <Stack.Screen
                 name="CreateOrder"
                 component={CreateOrderScreen}
@@ -415,10 +439,13 @@ export default function App() {
             </>
           )}
         </Stack.Navigator>
+        {/* Bouton flottant visible sur tous les écrans authentifiés sauf OrdersScreen (qui a son propre WaveFAB) */}
+        {isAuthenticated && <ConditionalFAB />}
       </NavigationContainer>
     </AuthContext.Provider>
         </CategoriesProvider>
       </LoadingProvider>
+      </DemoProvider>
     </SafeAreaProvider>
   )
 }

@@ -1,6 +1,13 @@
 // API Factures - Consultation et gestion
 import { dolibarrClient } from "./dolibarr.client"
 import type { Invoice, ApiResponse } from "../types/dolibarr.types"
+import AsyncStorage from "@react-native-async-storage/async-storage"
+import { demoInvoices, filterDemoData } from "../utils/demoData"
+
+async function isDemoMode(): Promise<boolean> {
+  const demoMode = await AsyncStorage.getItem("demo_mode")
+  return demoMode === "true"
+}
 
 export const InvoicesAPI = {
   // Récupérer toutes les factures
@@ -12,11 +19,19 @@ export const InvoicesAPI = {
     thirdparty_ids?: string
     sqlfilters?: string
   }): Promise<Invoice[]> {
+    if (await isDemoMode()) {
+      return filterDemoData(demoInvoices, params)
+    }
     return dolibarrClient.get<Invoice[]>("/invoices", params)
   },
 
   // Récupérer une facture par ID
   async getById(id: string): Promise<Invoice> {
+    if (await isDemoMode()) {
+      const invoice = demoInvoices.find((inv) => inv.id === id)
+      if (!invoice) throw new Error("Facture non trouvée")
+      return invoice
+    }
     return dolibarrClient.get<Invoice>(`/invoices/${id}`)
   },
 

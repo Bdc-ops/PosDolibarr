@@ -292,7 +292,7 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
               style={styles.accountButton}
               onPress={() => navigation.navigate("Account")}
             >
-              <Text style={styles.accountButtonIcon}>👤</Text>
+              <Text style={styles.accountButtonIcon}>⚙️</Text>
             </TouchableOpacity>
             <View style={styles.headerTitleContainer}>
               <Text style={styles.title}>Tableau de bord</Text>
@@ -379,39 +379,35 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: 24,
+    marginTop: 20,
+    alignItems: "center",
   },
   headerTop: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     gap: 12,
+    width: "100%",
   },
   accountButton: {
     width: 44,
     height: 44,
-    borderRadius: 22,
-    backgroundColor: "rgba(255, 255, 255, 0.78)",
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.6)",
-    shadowColor: "#0E1B2E",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
   },
   accountButtonIcon: {
-    fontSize: 24,
+    fontSize: 28,
   },
   headerTitleContainer: {
+    alignItems: "center",
     flex: 1,
-    marginHorizontal: 12,
   },
   title: {
-    fontSize: 28,
-    fontWeight: "700",
+    fontSize: 26,
+    fontWeight: "600",
     color: "#0E1B2E",
     marginBottom: 4,
+    letterSpacing: 0.5,
   },
   subtitle: {
     fontSize: 14,

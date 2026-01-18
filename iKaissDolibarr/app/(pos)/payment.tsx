@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCart } from '../../src/features/cart/CartContext';
+import { useI18n } from '../../src/i18n/I18nContext';
 import { theme } from '../../src/theme/theme';
 import { Payment, PaymentType, CompletedSale } from '../../src/types/pos';
 import { getCurrentMetierConfig } from '../../src/config/metiers.config';
@@ -28,6 +29,7 @@ import { discoverBluetoothScanners, BluetoothScanner } from '../../src/services/
 export default function PaymentScreen() {
   const { saleId, prefillType } = useLocalSearchParams<{ saleId: string; prefillType?: string }>();
   const { products, client, total_ttc, createPendingSale, clearCart } = useCart();
+  const { t } = useI18n();
   const metierConfig = getCurrentMetierConfig();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [currentPaymentType, setCurrentPaymentType] = useState<PaymentType>(
@@ -176,6 +178,25 @@ export default function PaymentScreen() {
   };
 
   const handleCompleteSale = async () => {
+    // Vérifier qu'un client est sélectionné
+    if (!client) {
+      Alert.alert(
+        t('pos.noDefaultClientSelected') || 'Aucun client par défaut sélectionné',
+        t('pos.pleaseSelectClient') || 'Merci de sélectionner un client',
+        [
+          {
+            text: t('common.cancel') || 'Annuler',
+            style: 'cancel',
+          },
+          {
+            text: t('pos.selectClient') || 'Sélectionner un client',
+            onPress: () => router.push('/(pos)/clients'),
+          },
+        ]
+      );
+      return;
+    }
+
     if (remaining > 0.01) {
       Alert.alert('Paiement incomplet', `Il reste ${remaining.toFixed(2)} € à payer`);
       return;

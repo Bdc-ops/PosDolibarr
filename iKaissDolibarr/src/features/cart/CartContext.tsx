@@ -3,10 +3,12 @@
  * Gère l'état du panier de vente (produits, remises, totaux)
  */
 
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { CartProduct, PendingSale, Discount } from '../../types/pos';
 import { SelectedClient } from '../../types/client';
 import { generateId } from '../../utils/id';
+import { loadPOSSettings } from '../../config/pos.settings';
+import { getClientById } from '../../api/clients';
 
 interface CartContextType {
   // État du panier
@@ -58,6 +60,29 @@ export function CartProvider({
   const [products, setProducts] = useState<CartProduct[]>([]);
   const [client, setClient] = useState<SelectedClient | null>(null);
   const [discounts, setDiscounts] = useState<Discount[]>([]);
+
+  // Charger le client par défaut au démarrage
+  useEffect(() => {
+    const loadDefaultClient = async () => {
+      try {
+        const settings = await loadPOSSettings();
+        if (settings.defaultClientId && !client) {
+          const defaultClient = await getClientById(settings.defaultClientId);
+          if (defaultClient) {
+            setClient({
+              id: defaultClient.id,
+              name: defaultClient.name,
+              email: defaultClient.email || undefined,
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement du client par défaut:', error);
+        // Ne pas bloquer l'application si le client par défaut ne peut pas être chargé
+      }
+    };
+    loadDefaultClient();
+  }, []); // Charger une seule fois au démarrage
   const [totals, setTotals] = useState({
     subtotal: 0,
     subtotal_ttc: 0,

@@ -1,6 +1,13 @@
 // API Commandes - Génération et gestion des commandes
 import { dolibarrClient } from "./dolibarr.client"
 import type { Order, ApiResponse } from "../types/dolibarr.types"
+import AsyncStorage from "@react-native-async-storage/async-storage"
+import { demoOrders, filterDemoData } from "../utils/demoData"
+
+async function isDemoMode(): Promise<boolean> {
+  const demoMode = await AsyncStorage.getItem("demo_mode")
+  return demoMode === "true"
+}
 
 export const OrdersAPI = {
   // Récupérer toutes les commandes
@@ -12,11 +19,19 @@ export const OrdersAPI = {
     thirdparty_ids?: string
     sqlfilters?: string
   }): Promise<Order[]> {
+    if (await isDemoMode()) {
+      return filterDemoData(demoOrders, params)
+    }
     return dolibarrClient.get<Order[]>("/orders", params)
   },
 
   // Récupérer une commande par ID
   async getById(id: string): Promise<Order> {
+    if (await isDemoMode()) {
+      const order = demoOrders.find((o) => o.id === id)
+      if (!order) throw new Error("Commande non trouvée")
+      return order
+    }
     return dolibarrClient.get<Order>(`/orders/${id}`)
   },
 

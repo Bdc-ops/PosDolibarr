@@ -237,12 +237,12 @@ export default function CreateOrderScreen({ navigation, route }: CreateOrderScre
 
   const handleCreateOrder = async () => {
     if (!selectedClient) {
-      Alert.alert("Erreur", "Veuillez sélectionner un client")
+      console.warn("⚠️ Tentative de création de commande sans client sélectionné")
       return
     }
 
     if (orderLines.length === 0) {
-      Alert.alert("Erreur", "Veuillez ajouter au moins un produit")
+      console.warn("⚠️ Tentative de création de commande sans produits")
       return
     }
 
@@ -327,10 +327,10 @@ export default function CreateOrderScreen({ navigation, route }: CreateOrderScre
           { text: "OK", onPress: () => navigation.goBack() },
         ])
       } else {
-        Alert.alert("Erreur", result.error || "Impossible de créer la commande")
+        console.warn("⚠️ Erreur lors de la création de la commande:", result.error || "Erreur inconnue")
       }
     } catch (error: any) {
-      Alert.alert("Erreur", error.message || "Une erreur est survenue")
+      console.warn("⚠️ Erreur lors de la création de la commande:", error.message || error)
     } finally {
       setCreating(false)
     }

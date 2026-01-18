@@ -12,8 +12,8 @@ export type ResourceType = "orders" | "invoices" | "products" | "thirdparties"
 const COMPATIBLE_SORT_FIELDS: Record<ResourceType, string[]> = {
   orders: ["date_commande", "date_creation", "t.date_commande", "t.date_creation", "ref"],
   invoices: ["datef", "date_creation", "t.datef", "t.date_creation", "ref"],
-  products: ["ref", "label", "price", "t.ref", "t.label"],
-  thirdparties: ["nom", "ref", "code_client", "datec", "t.nom", "t.ref"],
+  products: ["date_creation", "datec", "t.date_creation", "t.datec", "ref", "label", "price", "t.ref", "t.label"],
+  thirdparties: ["datec", "date_creation", "t.datec", "t.date_creation", "nom", "ref", "code_client", "t.nom", "t.ref"],
 }
 
 /**
