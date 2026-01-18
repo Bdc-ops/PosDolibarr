@@ -27,7 +27,10 @@
       "android": {
         "buildType": "app-bundle"
       },
-      "node": "20.18.0"
+      "node": "20.18.0",
+      "env": {
+        "NPM_FLAGS": "--legacy-peer-deps"
+      }
     }
   },
 }
