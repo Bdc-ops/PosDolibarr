@@ -1,0 +1,17 @@
+INSTRUCTIONS POUR CRÉER L'ICÔNE ET LE SPLASH SCREEN
+
+1. ICÔNE (icon.png)
+   - Taille: 1024x1024 pixels
+   - Format: PNG avec transparence
+   - Design: Logo "D" ou logo Dolibarr sur fond bleu (#2563eb)
+
+2. SPLASH SCREEN (splash.png)
+   - Taille: 2048x2048 pixels (ou 2732x2732)
+   - Format: PNG
+   - Design: Logo et texte "Dolibarr Caisse POS" centré sur fond bleu (#2563eb)
+
+OPTIONS RAPIDES:
+- Utilisez npx expo-asset-generator (recommandé)
+- Ou créez-les avec un outil graphique et placez-les dans assets/
+
+Une fois créés, les fichiers seront automatiquement détectés par Expo.

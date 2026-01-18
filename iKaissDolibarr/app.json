@@ -5,7 +5,9 @@
     "version": "1.0.3",
     "orientation": "default",
     "userInterfaceStyle": "automatic",
+    "icon": "./assets/icon.png",
     "splash": {
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#2563eb"
     },
@@ -22,7 +24,9 @@
       }
     },
     "android": {
+      "icon": "./assets/icon.png",
       "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#2563eb"
       },
       "package": "com.ikaiss.dolibarrpos",
