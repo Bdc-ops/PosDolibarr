@@ -26,7 +26,8 @@
       },
       "android": {
         "buildType": "app-bundle"
-      }
+      },
+      "node": "20.18.0"
     }
   },
 }
