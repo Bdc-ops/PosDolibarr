@@ -1,0 +1,70 @@
+{
+  "expo": {
+    "name": "PosDolibarr",
+    "slug": "posdolibarr",
+    "version": "1.0.4",
+    "orientation": "default",
+    "userInterfaceStyle": "automatic",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#2563eb"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.posdolibarr.pos",
+      "infoPlist": {
+        "NSCameraUsageDescription": "L'application a besoin de la caméra pour scanner les codes-barres des produits.",
+        "NSBluetoothAlwaysUsageDescription": "L'application a besoin du Bluetooth pour se connecter aux imprimantes de tickets.",
+        "NSBluetoothPeripheralUsageDescription": "L'application a besoin du Bluetooth pour se connecter aux imprimantes de tickets."
+      }
+    },
+    "android": {
+      "icon": "./assets/icon.png",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#2563eb"
+      },
+      "package": "com.posdolibarr.pos",
+      "permissions": [
+        "CAMERA",
+        "BLUETOOTH",
+        "BLUETOOTH_ADMIN",
+        "BLUETOOTH_SCAN",
+        "BLUETOOTH_CONNECT"
+      ]
+    },
+    "web": {},
+    "scheme": "posdolibarr",
+    "plugins": [
+      "expo-router",
+      "expo-dev-client",
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": "Permettre l'utilisation de Face ID pour sécuriser vos données."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "L'application a besoin de la caméra pour scanner les codes-barres des produits."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "99f840ea-9c28-4447-b9dc-3ce6cdeb4ae3"
+      }
+    },
+    "owner": "bdc_fahd-2"
+  }
+}

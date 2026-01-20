@@ -1,0 +1,36 @@
+{
+  "cli": {
+    "version": ">= 16.28.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "ios": {
+        "simulator": false
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "ios": {
+        "simulator": false,
+        "buildConfiguration": "Release"
+      },
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "node": "20.19.4",
+      "env": {
+        "NPM_FLAGS": "--legacy-peer-deps"
+      }
+    }
+  },
+}
