@@ -27,6 +27,7 @@ import {
   eachMonthOfInterval,
 } from "date-fns"
 import { getInvoiceDate, getOrderDate } from "../utils/invoiceDate"
+import WaveFAB from "../components/WaveFAB"
 
 interface ProductSales {
   productId: string
@@ -805,11 +806,13 @@ export default function StatsScreen() {
     <View style={styles.screen}>
       <View style={styles.backgroundGlow} />
       <View style={styles.backgroundGlowSecondary} />
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
-      >
+      <View style={styles.container}>
+        <WaveFAB />
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.content}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+        >
         <View style={styles.header}>
           <View>
             <Text style={styles.headerEyebrow}>Tableau de bord</Text>
@@ -1066,7 +1069,8 @@ export default function StatsScreen() {
           <Text style={styles.noDataText}>Aucune donnée disponible</Text>
         )}
       </View>
-      </ScrollView>
+        </ScrollView>
+      </View>
     </View>
   )
 }
@@ -1097,9 +1101,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  scrollView: {
+    flex: 1,
+  },
   content: {
     padding: 16,
-    paddingBottom: 32,
+    paddingBottom: 100, // Espace pour le WaveFAB au-dessus du footer
   },
   header: {
     flexDirection: "row",

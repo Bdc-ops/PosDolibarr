@@ -28,7 +28,6 @@ import AccountScreen from "./src/screens/AccountScreen"
 import DegradedModeBanner from "./src/components/DegradedModeBanner"
 import DemoModeBanner from "./src/components/DemoModeBanner"
 import LoadingScreen from "./src/components/LoadingScreen"
-import FloatingActionButton from "./src/components/FloatingActionButton"
 import { LoadingProvider } from "./src/contexts/LoadingContext"
 import { CategoriesProvider, useCategories } from "./src/contexts/CategoriesContext"
 import { DemoProvider, useDemo } from "./src/contexts/DemoContext"
@@ -294,11 +293,6 @@ export default function App() {
     return null
   }
 
-  // Composant pour afficher conditionnellement le FAB
-  // Le WaveFAB dans OrdersScreen masquera visuellement ce FAB avec son z-index
-  function ConditionalFAB() {
-    return <FloatingActionButton />
-  }
 
   // Toujours rendre NavigationContainer pour éviter les crashes
   // Afficher un écran de chargement pendant l'initialisation
@@ -439,8 +433,6 @@ export default function App() {
             </>
           )}
         </Stack.Navigator>
-        {/* Bouton flottant visible sur tous les écrans authentifiés sauf OrdersScreen (qui a son propre WaveFAB) */}
-        {isAuthenticated && <ConditionalFAB />}
       </NavigationContainer>
     </AuthContext.Provider>
         </CategoriesProvider>

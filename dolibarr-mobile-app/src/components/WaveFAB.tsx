@@ -79,15 +79,8 @@ export default function WaveFAB() {
         </View>
       )}
 
-      {/* Wave container avec bouton intégré */}
-      <View style={styles.waveContainer}>
-        {/* Wave effect avec View et border radius */}
-        <View style={styles.wave}>
-          {/* Vague supérieure avec border radius */}
-          <View style={styles.waveTop} />
-        </View>
-
-        {/* FAB Button intégré dans la vague */}
+      {/* FAB Button collé au footer */}
+      <View style={styles.fabContainer}>
         <TouchableOpacity
           style={styles.fab}
           onPress={toggleMenu}
@@ -159,70 +152,38 @@ const styles = StyleSheet.create({
     color: "#0E1B2E",
     flex: 1,
   },
-  waveContainer: {
+  fabContainer: {
     position: "absolute",
-    bottom: 75, // Au-dessus du footer de navigation (height: 75)
+    bottom: -5, // À 10px du footer (footer height: 75 + marginBottom: 5 + 10px d'espace)
     left: 0,
     right: 0,
-    height: 80,
-    zIndex: 1001, // Supérieur au FAB global (1000) pour le masquer sur cet écran
-    justifyContent: "flex-end",
     alignItems: "center",
-    pointerEvents: "box-none", // Permettre les interactions avec le contenu en dessous
-  },
-  wave: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 70,
-    width: "100%",
-    backgroundColor: "rgba(255, 255, 255, 0.95)",
-    borderTopLeftRadius: 35,
-    borderTopRightRadius: 35,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  waveTop: {
-    position: "absolute",
-    top: -20,
-    left: "20%",
-    right: "20%",
-    height: 25,
-    backgroundColor: "rgba(255, 255, 255, 0.95)",
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
+    zIndex: 1001,
+    pointerEvents: "box-none",
   },
   fab: {
-    position: "absolute",
-    bottom: 15,
-    alignSelf: "center",
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: "#0B5FFF",
     alignItems: "center",
     justifyContent: "center",
     shadowColor: "#0B5FFF",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 5,
-    elevation: 6,
-    zIndex: 1002, // Supérieur au container pour être visible
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   fabIcon: {
-    width: 52,
-    height: 52,
+    width: 56,
+    height: 56,
     alignItems: "center",
     justifyContent: "center",
   },
   fabIconText: {
-    fontSize: 30,
+    fontSize: 42,
     fontWeight: "300",
     color: "#fff",
-    lineHeight: 52,
+    lineHeight: 56,
   },
 })

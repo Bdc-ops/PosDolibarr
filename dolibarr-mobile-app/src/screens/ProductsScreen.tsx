@@ -20,6 +20,7 @@ import FilterBar, { type FilterOptions } from "../components/FilterBar"
 import Loader from "../components/Loader"
 import EmptyState from "../components/EmptyState"
 import { limitForDisplay, formatDisplayCount } from "../utils/apiHelpers"
+import WaveFAB from "../components/WaveFAB"
 
 type ViewMode = "list" | "grid"
 
@@ -202,6 +203,7 @@ export default function ProductsScreen({ navigation }: any) {
       <View style={styles.backgroundGlow} />
       <View style={styles.backgroundGlowSecondary} />
       <View style={styles.container}>
+        <WaveFAB />
         {/* En-tête avec toggle de vue */}
         <View style={styles.header}>
           <View style={styles.headerTitle}>
@@ -470,6 +472,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 16,
+    paddingBottom: 100, // Espace pour le WaveFAB au-dessus du footer
   },
   gridContent: {
     padding: 8,

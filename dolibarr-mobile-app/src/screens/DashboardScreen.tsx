@@ -20,6 +20,7 @@ import { getInvoiceDate, getOrderDate } from "../utils/invoiceDate"
 import { InvoicesAPI } from "../api/invoices"
 import { buildSortParams } from "../utils/dolibarrSort"
 import type { Invoice } from "../types/dolibarr.types"
+import WaveFAB from "../components/WaveFAB"
 
 const { width } = Dimensions.get("window")
 const TILE_WIDTH = (width - 48) / 2 // 2 colonnes avec padding
@@ -284,7 +285,9 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
     <View style={styles.screen}>
       <View style={styles.backgroundGlow} />
       <View style={styles.backgroundGlowSecondary} />
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <View style={styles.container}>
+        <WaveFAB />
+        <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
         {/* En-tête avec bouton compte en haut à gauche */}
         <View style={styles.header}>
           <View style={styles.headerTop}>
@@ -343,7 +346,8 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
             </View>
           ))}
         </View>
-      </ScrollView>
+        </ScrollView>
+      </View>
     </View>
   )
 }
@@ -374,8 +378,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  scrollView: {
+    flex: 1,
+  },
   content: {
     padding: 16,
+    paddingBottom: 100, // Espace pour le WaveFAB au-dessus du footer
   },
   header: {
     marginBottom: 24,

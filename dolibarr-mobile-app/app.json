@@ -2,7 +2,7 @@
   "expo": {
     "name": "iSales Dolibarr",
     "slug": "isales-dolibarr",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -17,7 +17,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.isales.dolibarr",
-      "buildNumber": "12",
+      "buildNumber": "13",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Cette application utilise votre position GPS pour calculer les itinéraires vers les clients.",
         "ITSAppUsesNonExemptEncryption": false

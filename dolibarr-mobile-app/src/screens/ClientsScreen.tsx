@@ -19,6 +19,7 @@ import Loader from "../components/Loader"
 import ClientMapView from "../components/ClientMapView"
 import { Ionicons } from "@expo/vector-icons"
 import { limitForDisplay, formatDisplayCount } from "../utils/apiHelpers"
+import WaveFAB from "../components/WaveFAB"
 
 type ViewMode = "list" | "map"
 type SortMode = "alphabetical" | "department" | "none"
@@ -302,6 +303,7 @@ export default function ClientsScreen({ navigation }: any) {
       <View style={styles.backgroundGlow} />
       <View style={styles.backgroundGlowSecondary} />
       <View style={styles.container}>
+        <WaveFAB />
         {/* Header avec recherche et boutons */}
         <View style={styles.header}>
           <TextInput
@@ -668,6 +670,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 16,
+    paddingBottom: 100, // Espace pour le WaveFAB au-dessus du footer
   },
   clientCard: {
     backgroundColor: "rgba(255, 255, 255, 0.78)",
