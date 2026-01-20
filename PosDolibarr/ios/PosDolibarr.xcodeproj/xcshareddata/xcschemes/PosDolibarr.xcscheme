@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "DolibarrPOS.app"
-               BlueprintName = "DolibarrPOS"
-               ReferencedContainer = "container:DolibarrPOS.xcodeproj">
+               BuildableName = "PosDolibarr.app"
+               BlueprintName = "PosDolibarr"
+               ReferencedContainer = "container:PosDolibarr.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "DolibarrPOSTests.xctest"
-               BlueprintName = "DolibarrPOSTests"
-               ReferencedContainer = "container:DolibarrPOS.xcodeproj">
+               BuildableName = "PosDolibarrTests.xctest"
+               BlueprintName = "PosDolibarrTests"
+               ReferencedContainer = "container:PosDolibarr.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "DolibarrPOS.app"
-            BlueprintName = "DolibarrPOS"
-            ReferencedContainer = "container:DolibarrPOS.xcodeproj">
+            BuildableName = "PosDolibarr.app"
+            BlueprintName = "PosDolibarr"
+            ReferencedContainer = "container:PosDolibarr.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "DolibarrPOS.app"
-            BlueprintName = "DolibarrPOS"
-            ReferencedContainer = "container:DolibarrPOS.xcodeproj">
+            BuildableName = "PosDolibarr.app"
+            BlueprintName = "PosDolibarr"
+            ReferencedContainer = "container:PosDolibarr.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

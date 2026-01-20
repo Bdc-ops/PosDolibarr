@@ -1,8 +1,8 @@
 {
   "expo": {
     "name": "PosDolibarr",
-    "slug": "posdolibarr",
-    "version": "1.0.4",
+    "slug": "dolibarr-pos",
+    "version": "1.0.5",
     "orientation": "default",
     "userInterfaceStyle": "automatic",
     "icon": "./assets/icon.png",
@@ -35,11 +35,20 @@
         "BLUETOOTH",
         "BLUETOOTH_ADMIN",
         "BLUETOOTH_SCAN",
-        "BLUETOOTH_CONNECT"
+        "BLUETOOTH_CONNECT",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "CAMERA",
+        "BLUETOOTH",
+        "BLUETOOTH_ADMIN",
+        "BLUETOOTH_SCAN",
+        "BLUETOOTH_CONNECT",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "web": {},
-    "scheme": "posdolibarr",
+    "scheme": "dolibarr-pos",
     "plugins": [
       "expo-router",
       "expo-dev-client",
@@ -65,6 +74,10 @@
         "projectId": "99f840ea-9c28-4447-b9dc-3ce6cdeb4ae3"
       }
     },
-    "owner": "bdc_fahd-2"
+    "owner": "bdc_fahd-2",
+    "runtimeVersion": "1.0.0",
+    "updates": {
+      "url": "https://u.expo.dev/99f840ea-9c28-4447-b9dc-3ce6cdeb4ae3"
+    }
   }
 }
