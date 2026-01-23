@@ -1,6 +1,18 @@
 # MediLink - Application Mobile de Pharmacie en Ligne
 
+**Version 1.1**
+
 Application React Native pour iOS et Android permettant de commander des médicaments en ligne via le scan d'ordonnances, avec intégration à l'API Dolibarr.
+
+## Copyright
+
+© 2024 BigDataConsulting
+
+**Support :** support@anexys.fr
+
+**Développement :** apps-dev.fr
+
+Tous droits réservés.
 
 ## Fonctionnalités
 

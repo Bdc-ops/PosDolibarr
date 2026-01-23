@@ -179,10 +179,10 @@ const OrdersScreen = ({ navigation }) => {
       )}
 
       <FAB
-        icon="camera"
+        icon="cart-plus"
         style={styles.fab}
-        onPress={() => navigation.navigate('PrescriptionScanner')}
-        label="Scanner"
+        onPress={() => navigation.navigate('NewOrder')}
+        label="Nouvelle commande"
       />
     </View>
   );

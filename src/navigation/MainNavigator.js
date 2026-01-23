@@ -7,6 +7,7 @@ import { theme } from '../theme/theme';
 import OrdersScreen from '../screens/main/OrdersScreen';
 import DeliveriesScreen from '../screens/main/DeliveriesScreen';
 import ProfileScreen from '../screens/main/ProfileScreen';
+import NewOrderScreen from '../screens/main/NewOrderScreen';
 import PrescriptionScannerScreen from '../screens/main/PrescriptionScannerScreen';
 import PrescriptionResultScreen from '../screens/main/PrescriptionResultScreen';
 import OrderDetailScreen from '../screens/main/OrderDetailScreen';
@@ -14,6 +15,7 @@ import DeliveryDetailScreen from '../screens/main/DeliveryDetailScreen';
 import ChatScreen from '../screens/main/ChatScreen';
 import EmergencyContactScreen from '../screens/main/EmergencyContactScreen';
 import AdviceScreen from '../screens/main/AdviceScreen';
+import AboutScreen from '../screens/main/AboutScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -31,9 +33,9 @@ const OrdersStack = () => (
       options={{ title: 'Détails de la commande' }}
     />
     <Stack.Screen 
-      name="PrescriptionScanner" 
-      component={PrescriptionScannerScreen}
-      options={{ title: 'Scanner une ordonnance' }}
+      name="NewOrder" 
+      component={NewOrderScreen}
+      options={{ title: 'Nouvelle commande' }}
     />
     <Stack.Screen 
       name="PrescriptionResult" 
@@ -86,13 +88,13 @@ const MainNavigator = () => {
           let iconName;
 
           if (route.name === 'Orders') {
-            iconName = focused ? 'pill' : 'pill-outline';
+            iconName = 'pill';
           } else if (route.name === 'Deliveries') {
-            iconName = focused ? 'truck-delivery' : 'truck-delivery-outline';
+            iconName = 'truck-delivery';
           } else if (route.name === 'Support') {
-            iconName = focused ? 'headset' : 'headset-outline';
+            iconName = 'headset';
           } else if (route.name === 'Profile') {
-            iconName = focused ? 'account' : 'account-outline';
+            iconName = 'account-circle';
           }
 
           return <MaterialCommunityIcons name={iconName} size={size} color={color} />;
@@ -123,11 +125,26 @@ const MainNavigator = () => {
       />
       <Tab.Screen 
         name="Profile" 
-        component={ProfileScreen}
+        component={ProfileStack}
         options={{ title: 'Profil' }}
       />
     </Tab.Navigator>
   );
 };
+
+const ProfileStack = () => (
+  <Stack.Navigator>
+    <Stack.Screen 
+      name="ProfileMain" 
+      component={ProfileScreen}
+      options={{ title: 'Profil' }}
+    />
+    <Stack.Screen 
+      name="About" 
+      component={AboutScreen}
+      options={{ title: 'À propos' }}
+    />
+  </Stack.Navigator>
+);
 
 export default MainNavigator;

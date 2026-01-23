@@ -18,7 +18,7 @@ import { prescriptionService, ordersService } from '../../services/dolibarrApi';
 import { AuthContext } from '../../context/AuthContext';
 import { theme } from '../../theme/theme';
 
-const PrescriptionScannerScreen = ({ navigation }) => {
+const PrescriptionScannerScreen = ({ navigation, hideHeader = false }) => {
   const { isDemoMode } = React.useContext(AuthContext);
   const cameraRef = useRef(null);
   const [permission, requestPermission] = useCameraPermissions();

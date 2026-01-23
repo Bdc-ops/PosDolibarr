@@ -19,7 +19,7 @@ import { AuthContext } from '../../context/AuthContext';
 import { userService } from '../../services/dolibarrApi';
 import { theme } from '../../theme/theme';
 
-const ProfileScreen = () => {
+const ProfileScreen = ({ navigation }) => {
   const { logout } = React.useContext(AuthContext);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -343,6 +343,24 @@ const ProfileScreen = () => {
             style={styles.supportButton}
           >
             Conseils médicaux
+          </Button>
+        </Card.Content>
+      </Card>
+
+      <Card style={styles.card}>
+        <Card.Content>
+          <Text variant="titleLarge" style={styles.sectionTitle}>
+            À propos
+          </Text>
+          <Divider style={styles.divider} />
+
+          <Button
+            mode="outlined"
+            onPress={() => navigation.navigate('About')}
+            icon="information"
+            style={styles.supportButton}
+          >
+            À propos de l'application
           </Button>
         </Card.Content>
       </Card>
